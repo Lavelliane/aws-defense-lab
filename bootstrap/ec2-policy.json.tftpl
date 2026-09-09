@@ -1,0 +1,222 @@
+[
+  {
+    "Sid": "DescribeEC2",
+    "Effect": "Allow",
+    "Action": "ec2:Describe*",
+    "Resource": "*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}"
+      }
+    }
+  },
+  {
+    "Sid": "CreateVpcWithLabTags",
+    "Effect": "Allow",
+    "Action": "ec2:CreateVpc",
+    "Resource": "arn:aws:ec2:${region}:${account}:vpc/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "CreateSubnetWithLabTags",
+    "Effect": "Allow",
+    "Action": "ec2:CreateSubnet",
+    "Resource": "arn:aws:ec2:${region}:${account}:subnet/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "CreateInternetGatewayWithLabTags",
+    "Effect": "Allow",
+    "Action": "ec2:CreateInternetGateway",
+    "Resource": "arn:aws:ec2:${region}:${account}:internet-gateway/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "CreateRouteTableWithLabTags",
+    "Effect": "Allow",
+    "Action": "ec2:CreateRouteTable",
+    "Resource": "arn:aws:ec2:${region}:${account}:route-table/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "CreateSecurityGroupWithLabTags",
+    "Effect": "Allow",
+    "Action": "ec2:CreateSecurityGroup",
+    "Resource": "arn:aws:ec2:${region}:${account}:security-group/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "CreateWithinLabVPC",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:CreateSubnet",
+      "ec2:CreateRouteTable",
+      "ec2:CreateSecurityGroup"
+    ],
+    "Resource": "arn:aws:ec2:${region}:${account}:vpc/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:ResourceTag/Lab": "${lab_name}",
+        "aws:ResourceTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "LaunchLabInstances",
+    "Effect": "Allow",
+    "Action": "ec2:RunInstances",
+    "Resource": "arn:aws:ec2:${region}:${account}:instance/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab",
+        "ec2:InstanceType": [
+          "t3.micro",
+          "t3.xlarge"
+        ]
+      }
+    }
+  },
+  {
+    "Sid": "LaunchInLabNetwork",
+    "Effect": "Allow",
+    "Action": "ec2:RunInstances",
+    "Resource": [
+      "arn:aws:ec2:${region}:${account}:subnet/*",
+      "arn:aws:ec2:${region}:${account}:security-group/*"
+    ],
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:ResourceTag/Lab": "${lab_name}",
+        "aws:ResourceTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "LaunchSupportingResources",
+    "Effect": "Allow",
+    "Action": "ec2:RunInstances",
+    "Resource": [
+      "arn:aws:ec2:${region}::image/*",
+      "arn:aws:ec2:${region}::snapshot/*",
+      "arn:aws:ec2:${region}:${account}:volume/*",
+      "arn:aws:ec2:${region}:${account}:network-interface/*"
+    ],
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}"
+      }
+    }
+  },
+  {
+    "Sid": "ModifyOwnedEC2Only",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:TerminateInstances",
+      "ec2:DeleteVpc",
+      "ec2:ModifyVpcAttribute",
+      "ec2:DeleteSubnet",
+      "ec2:ModifySubnetAttribute",
+      "ec2:DeleteInternetGateway",
+      "ec2:AttachInternetGateway",
+      "ec2:DetachInternetGateway",
+      "ec2:DeleteRouteTable",
+      "ec2:CreateRoute",
+      "ec2:DeleteRoute",
+      "ec2:ReplaceRoute",
+      "ec2:AssociateRouteTable",
+      "ec2:DisassociateRouteTable",
+      "ec2:ReplaceRouteTableAssociation",
+      "ec2:DeleteSecurityGroup",
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:AuthorizeSecurityGroupEgress",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupEgress",
+      "ec2:ModifySecurityGroupRules",
+      "ec2:ModifyInstanceAttribute",
+      "ec2:ModifyInstanceMetadataOptions",
+      "ec2:ModifyVolume",
+      "ec2:AssociateIamInstanceProfile",
+      "ec2:ReplaceIamInstanceProfileAssociation",
+      "ec2:DisassociateIamInstanceProfile"
+    ],
+    "Resource": "arn:aws:ec2:${region}:${account}:*/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:ResourceTag/Lab": "${lab_name}",
+        "aws:ResourceTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
+    "Sid": "TagsOnCreate",
+    "Effect": "Allow",
+    "Action": "ec2:CreateTags",
+    "Resource": "arn:aws:ec2:${region}:${account}:*/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "ec2:CreateAction": [
+          "CreateVpc",
+          "CreateSubnet",
+          "CreateInternetGateway",
+          "CreateRouteTable",
+          "CreateSecurityGroup",
+          "RunInstances",
+          "AuthorizeSecurityGroupIngress",
+          "AuthorizeSecurityGroupEgress"
+        ]
+      }
+    }
+  },
+  {
+    "Sid": "UpdateOwnedTagsOnly",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:CreateTags",
+      "ec2:DeleteTags"
+    ],
+    "Resource": "arn:aws:ec2:${region}:${account}:*/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:ResourceTag/Lab": "${lab_name}",
+        "aws:ResourceTag/Project": "aws-defense-lab"
+      }
+    }
+  }
+]

@@ -1,0 +1,5 @@
+github_repository = "YOUR-OWNER/aws-defense-lab"
+aws_region = "ap-southeast-1"
+lab_name = "defense-lab"
+# If the GitHub provider already exists:
+# existing_oidc_provider_arn = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"

@@ -1,0 +1,8 @@
+[
+  {
+    "ip": "192.0.2.44",
+    "source": "synthetic TEST-NET fixture",
+    "description": "AWS Defense Lab demonstration IOC",
+    "expires_at": "2036-01-01T00:00:00Z"
+  }
+]

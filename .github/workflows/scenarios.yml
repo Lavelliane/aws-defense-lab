@@ -1,0 +1,76 @@
+name: Run Lab Scenario
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: Bounded lab scenario (verify requires hardened deployment)
+        type: choice
+        options: [probe, exploit, verify]
+        required: true
+      confirmation:
+        description: Type the configured lab name
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: aws-defense-lab
+  cancel-in-progress: false
+env:
+  CHECKPOINT_DISABLE: '1'
+  TF_IN_AUTOMATION: 'true'
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+  TF_VAR_lab_name: ${{ vars.LAB_NAME }}
+  TF_VAR_allowed_cidr: ${{ vars.ALLOWED_CIDR }}
+  TF_VAR_permissions_boundary_arn: ${{ vars.PERMISSIONS_BOUNDARY_ARN }}
+
+jobs:
+  scenario:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.13.5'
+          terraform_wrapper: false
+      - name: Check configuration
+        env:
+          STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          DEPLOY_ROLE: ${{ vars.AWS_ROLE_ARN }}
+        run: python3 scripts/check_workflow_config.py
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: defense-lab-${{ github.run_id }}
+      - name: Install operation dependencies
+        run: python3 -m pip install -r app/requirements.txt
+      - name: Build runtime bundle
+        run: python3 scripts/build_bundle.py
+      - name: Initialize remote state
+        env:
+          STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=$STATE_BUCKET" \
+            -backend-config="key=lab/terraform.tfstate" \
+            -backend-config="region=$AWS_REGION" \
+            -backend-config="encrypt=true" \
+            -backend-config="use_lockfile=true"
+
+      - name: Confirm and run owned-lab scenario
+        env:
+          SCENARIO: ${{ inputs.scenario }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          test "$CONFIRMATION" = "$TF_VAR_lab_name"
+          python3 scripts/operations.py scenario --scenario "$SCENARIO" --confirm-lab

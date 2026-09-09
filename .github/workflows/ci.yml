@@ -1,0 +1,35 @@
+name: Validate Repository
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+env:
+  CHECKPOINT_DISABLE: '1'
+  TF_IN_AUTOMATION: 'true'
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.13.5'
+          terraform_wrapper: false
+      - name: Unit tests and shell syntax
+        run: |
+          python3 -m unittest discover -s tests -v
+          for script in scripts/*.sh; do bash -n "$script"; done
+          python3 scripts/build_bundle.py
+          terraform fmt -check -recursive
+      - name: Validate Terraform without AWS access
+        run: |
+          terraform -chdir=bootstrap init -backend=false -input=false
+          terraform -chdir=bootstrap validate
+          terraform -chdir=terraform init -backend=false -input=false
+          terraform -chdir=terraform validate
+          terraform -chdir=terraform test -no-color

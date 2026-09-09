@@ -1,0 +1,65 @@
+<group name="defense_lab,">
+  <rule id="110000" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="lab">^aws-defense-lab$</field>
+    <description>AWS Defense Lab application event.</description>
+  </rule>
+  <rule id="110002" level="3">
+    <if_sid>110000</if_sid>
+    <field name="event">^export$</field>
+    <description>Lab export: $(object_key), outcome $(outcome).</description>
+  </rule>
+  <rule id="110010" level="10">
+    <if_sid>110002</if_sid>
+    <field name="object_key" type="pcre2">^restricted/</field>
+    <field name="outcome">^allowed$</field>
+    <description>Lab authorization failure: restricted dummy file exported.</description>
+    <group>lab_data_access,</group>
+  </rule>
+  <rule id="110011" level="5">
+    <if_sid>110002</if_sid>
+    <field name="object_key" type="pcre2">^restricted/</field>
+    <field name="outcome">^denied$</field>
+    <description>Lab defense: restricted export denied.</description>
+    <group>lab_prevention,</group>
+  </rule>
+  <rule id="110012" level="12">
+    <if_sid>110010</if_sid>
+    <list field="srcip" lookup="address_match_key">etc/lists/defense-lab-ips</list>
+    <description>Restricted lab export from a synthetic IOC source.</description>
+    <group>lab_data_access,lab_threat_intel,</group>
+  </rule>
+  <rule id="110013" level="7">
+    <if_sid>110011</if_sid>
+    <list field="srcip" lookup="address_match_key">etc/lists/defense-lab-ips</list>
+    <description>Restricted lab export denied from a synthetic IOC source.</description>
+    <group>lab_prevention,lab_threat_intel,</group>
+  </rule>
+  <rule id="110020" level="5">
+    <if_sid>110000</if_sid>
+    <field name="event">^probe$</field>
+    <description>Lab unknown endpoint request; investigate context.</description>
+    <group>lab_probe,</group>
+  </rule>
+  <rule id="110021" level="7">
+    <if_sid>110020</if_sid>
+    <list field="srcip" lookup="address_match_key">etc/lists/defense-lab-ips</list>
+    <description>Lab endpoint probe from a synthetic IOC source.</description>
+    <group>lab_probe,lab_threat_intel,</group>
+  </rule>
+  <rule id="110030" level="8">
+    <if_sid>80200</if_sid>
+    <field name="aws.source">^cloudtrail$</field>
+    <field name="aws.eventName">^GetObject$</field>
+    <field name="aws.requestParameters.bucketName">^__DATA_BUCKET__$</field>
+    <field name="aws.requestParameters.key" type="pcre2">^restricted/</field>
+    <description>Lab CloudTrail: restricted object read requested. Inspect errorCode for outcome.</description>
+    <group>lab_cloudtrail,</group>
+  </rule>
+  <rule id="110031" level="5">
+    <if_sid>110030</if_sid>
+    <field name="aws.errorCode" type="pcre2">(?i)AccessDenied</field>
+    <description>Lab CloudTrail: IAM denied restricted object access.</description>
+    <group>lab_cloudtrail,lab_prevention,</group>
+  </rule>
+</group>
