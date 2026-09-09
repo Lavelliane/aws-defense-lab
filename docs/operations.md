@@ -5,7 +5,7 @@
 Use a dedicated AWS lab account and an existing authorized federated/SSO session. You need Terraform 1.13.5, Python 3.10+, AWS CLI v2, and the Session Manager plugin if you want interactive sessions. GitHub must have Actions enabled.
 
 1. Create a GitHub repository from this source, with default branch **main**. Keep the workflows on main; the AWS trust policy and workflow job guards reject other branches.
-2. Copy `bootstrap/terraform.tfvars.example` to `bootstrap/terraform.tfvars`. Set exact `OWNER/REPOSITORY`, region and lab name. If GitHub OIDC already exists in the AWS account, set `existing_oidc_provider_arn` to that provider instead of creating another.
+2. Copy `bootstrap/terraform.tfvars.example` to `bootstrap/terraform.tfvars`. Set the exact GitHub OIDC repository segment, region and lab name. Use `OWNER/REPOSITORY` for legacy subjects or `OWNER@OWNER-ID/REPOSITORY@REPOSITORY-ID` when GitHub uses immutable subjects. If GitHub OIDC already exists in the AWS account, set `existing_oidc_provider_arn` to that provider instead of creating another.
 3. Authenticate locally, then run:
 
 ```bash

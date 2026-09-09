@@ -19,6 +19,7 @@ data "aws_caller_identity" "current" {
 locals {
   account          = data.aws_caller_identity.current.account_id
   prefix           = "${var.lab_name}-${local.account}-${var.aws_region}"
+  github_subject   = "repo:${var.github_repository}:ref:refs/heads/main"
   buckets          = [for suffix in ["data", "audit", "assets"] : "arn:aws:s3:::${local.prefix}-${suffix}"]
   lab_roles        = "arn:aws:iam::${local.account}:role/aws-defense-lab/${var.lab_name}-*"
   lab_profiles     = "arn:aws:iam::${local.account}:instance-profile/aws-defense-lab/${var.lab_name}-*"
@@ -104,7 +105,7 @@ resource "aws_iam_role" "deploy" {
       Action = "sts:AssumeRoleWithWebIdentity", Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub" = local.github_subject
         }
       }
       }

@@ -12,10 +12,10 @@ variable "lab_name" {
 }
 variable "github_repository" {
   type        = string
-  description = "Exact OWNER/REPOSITORY, including case. Only main is trusted."
+  description = "Exact GitHub OIDC repository segment, including immutable IDs when GitHub uses them. Only main is trusted."
   validation {
-    condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))
-    error_message = "Use OWNER/REPOSITORY."
+    condition     = can(regex("^[A-Za-z0-9_.-]+(@[0-9]+)?/[A-Za-z0-9_.-]+(@[0-9]+)?$", var.github_repository))
+    error_message = "Use OWNER/REPOSITORY or OWNER@OWNER_ID/REPOSITORY@REPOSITORY_ID."
   }
 }
 variable "existing_oidc_provider_arn" {

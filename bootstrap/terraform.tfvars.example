@@ -1,4 +1,6 @@
 github_repository = "YOUR-OWNER/aws-defense-lab"
+# Repositories using GitHub immutable OIDC subjects require:
+# github_repository = "YOUR-OWNER@OWNER-ID/aws-defense-lab@REPOSITORY-ID"
 aws_region = "ap-southeast-1"
 lab_name = "defense-lab"
 # If the GitHub provider already exists:
