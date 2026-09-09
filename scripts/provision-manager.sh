@@ -37,10 +37,10 @@ boto3.client('s3', region_name=os.environ['AWS_REGION']).list_objects_v2(
 print('Audit bucket list access verified; first CloudTrail delivery may still be pending.')
 CHECK_AUDIT
 for attempt in $(seq 1 60); do
-  if curl -kfsS https://127.0.0.1/api/status >/dev/null; then break; fi
+  if python3 "$base/scripts/check_dashboard.py"; then break; fi
   sleep 5
 done
-curl -kfsS https://127.0.0.1/api/status >/dev/null
+python3 "$base/scripts/check_dashboard.py"
 
 cat > /etc/systemd/system/defense-lab-intel.service <<'SERVICE'
 [Unit]
