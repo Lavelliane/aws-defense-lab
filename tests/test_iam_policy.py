@@ -28,3 +28,18 @@ class DeploymentPolicyTests(unittest.TestCase):
             if 'ec2:CreateTags' in actions:
                 condition=statement['Condition']['StringEquals']
                 self.assertTrue('ec2:CreateAction' in condition or condition.get('aws:ResourceTag/Lab')=='defense-lab')
+    def test_new_security_group_rules_use_request_tags(self):
+        expected={'ec2:AuthorizeSecurityGroupIngress','ec2:AuthorizeSecurityGroupEgress'}
+        matching=[]
+        for statement in self.statements():
+            actions=statement['Action']
+            if isinstance(actions,str): actions=[actions]
+            resources=statement['Resource']
+            if isinstance(resources,str): resources=[resources]
+            if expected.issubset(actions) and any(':security-group-rule/*' in resource for resource in resources):
+                matching.append(statement)
+        self.assertEqual(len(matching),1)
+        conditions=matching[0]['Condition']['StringEquals']
+        self.assertEqual(conditions['aws:RequestTag/Lab'],'defense-lab')
+        self.assertEqual(conditions['aws:RequestTag/Project'],'aws-defense-lab')
+        self.assertEqual(conditions['aws:RequestedRegion'],'ap-southeast-1')

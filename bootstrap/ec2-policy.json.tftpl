@@ -142,6 +142,22 @@
     }
   },
   {
+    "Sid": "CreateTaggedSecurityGroupRules",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:AuthorizeSecurityGroupEgress"
+    ],
+    "Resource": "arn:aws:ec2:${region}:${account}:security-group-rule/*",
+    "Condition": {
+      "StringEquals": {
+        "aws:RequestedRegion": "${region}",
+        "aws:RequestTag/Lab": "${lab_name}",
+        "aws:RequestTag/Project": "aws-defense-lab"
+      }
+    }
+  },
+  {
     "Sid": "ModifyOwnedEC2Only",
     "Effect": "Allow",
     "Action": [
