@@ -47,7 +47,7 @@ jobs:
           STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
           DEPLOY_ROLE: ${{ vars.AWS_ROLE_ARN }}
         run: python3 scripts/check_workflow_config.py
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
